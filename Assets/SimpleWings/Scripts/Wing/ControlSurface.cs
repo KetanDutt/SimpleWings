@@ -55,9 +55,9 @@ public class ControlSurface : MonoBehaviour
 		float targetAngle = targetDeflection > 0f ? targetDeflection * max : targetDeflection * min;
 
 		// How much you can deflect, depends on how much force it would take
-		if (rigid != null && wing != null && rigid.velocity.sqrMagnitude > 1f)
+		if (rigid != null && wing != null && rigid.linearVelocity.sqrMagnitude > 1f)
 		{
-			float torqueAtMaxDeflection = rigid.velocity.sqrMagnitude * wing.WingArea;
+			float torqueAtMaxDeflection = rigid.linearVelocity.sqrMagnitude * wing.WingArea;
 			float maxAvailableDeflection = Mathf.Asin(maxTorque / torqueAtMaxDeflection) * Mathf.Rad2Deg;
 
 			// Asin(x) where x > 1 or x < -1 is not a number.
