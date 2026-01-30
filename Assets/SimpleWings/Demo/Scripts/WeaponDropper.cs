@@ -40,9 +40,12 @@ public class WeaponDropper : MonoBehaviour
 
 	private void SpawnWeapon()
 	{
-		wep = Instantiate(weaponPrefab, transform);
-		wep.transform.localPosition = Vector3.zero;
-		wep.transform.localRotation = Quaternion.identity;
+		if (weaponPrefab != null)
+		{
+			wep = Instantiate(weaponPrefab, transform);
+			wep.transform.localPosition = Vector3.zero;
+			wep.transform.localRotation = Quaternion.identity;
+		}
 	}
 
 }

@@ -36,7 +36,7 @@ public class Shooter : MonoBehaviour
 	{
 		if (rigid != null)
 		{
-			rigid.AddRelativeForce(Vector3.forward * launchSpeed, ForceMode.VelocityChange);
+			rigid.AddForce(transform.forward * launchSpeed, ForceMode.VelocityChange);
 		}
 	}
 
