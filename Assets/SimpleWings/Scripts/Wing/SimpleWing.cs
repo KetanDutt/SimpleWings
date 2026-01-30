@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Brian Hernandez. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
@@ -81,27 +81,32 @@ public class SimpleWing : MonoBehaviour
 		}
 	}
 
-	private void Update()
+	private void OnValidate()
 	{
 		// Prevent division by zero.
 		if (dimensions.x <= 0f)
 			dimensions.x = 0.01f;
 		if (dimensions.y <= 0f)
 			dimensions.y = 0.01f;
+	}
 
+	private void Update()
+	{
+#if UNITY_EDITOR
 		// DEBUG
 		if (rigid != null)
 		{
 			Debug.DrawRay(transform.position, liftDirection * liftForce * 0.0001f, Color.blue);
 			Debug.DrawRay(transform.position, -rigid.velocity.normalized * dragForce * 0.0001f, Color.red);
 		}
+#endif
 	}
 
 	private void FixedUpdate()
 	{
 		if (rigid != null && wing != null)
 		{
-			Vector3 forceApplyPos = (applyForcesToCenter) ? rigid.transform.TransformPoint(rigid.centerOfMass) : transform.position;
+			Vector3 forceApplyPos = (applyForcesToCenter) ? rigid.worldCenterOfMass : transform.position;
 
 			Vector3 localVelocity = transform.InverseTransformDirection(rigid.GetPointVelocity(transform.position));
 			localVelocity.x = 0f;
@@ -112,18 +117,23 @@ public class SimpleWing : MonoBehaviour
 			dragCoefficient = wing.GetDragAtAOA(angleOfAttack);
 
 			// Calculate lift/drag.
-			liftForce = localVelocity.sqrMagnitude * liftCoefficient * WingArea * liftMultiplier;
-			dragForce = localVelocity.sqrMagnitude * dragCoefficient * WingArea * dragMultiplier;
+			float sqrVelocity = localVelocity.sqrMagnitude;
+			liftForce = sqrVelocity * liftCoefficient * WingArea * liftMultiplier;
+			dragForce = sqrVelocity * dragCoefficient * WingArea * dragMultiplier;
 
 			// Vector3.Angle always returns a positive value, so add the sign back in.
 			liftForce *= -Mathf.Sign(localVelocity.y);
 
 			// Lift is always perpendicular to air flow.
-			liftDirection = Vector3.Cross(rigid.velocity, transform.right).normalized;
-			rigid.AddForceAtPosition(liftDirection * liftForce, forceApplyPos, ForceMode.Force);
+			Vector3 worldVelocity = rigid.velocity;
+			if (worldVelocity.sqrMagnitude > 0.0001f)
+			{
+				Vector3 worldVelNormalized = worldVelocity.normalized;
+				liftDirection = Vector3.Cross(worldVelNormalized, transform.right).normalized;
 
-			// Drag is always opposite of the velocity.
-			rigid.AddForceAtPosition(-rigid.velocity.normalized * dragForce, forceApplyPos, ForceMode.Force);
+				rigid.AddForceAtPosition(liftDirection * liftForce, forceApplyPos, ForceMode.Force);
+				rigid.AddForceAtPosition(-worldVelNormalized * dragForce, forceApplyPos, ForceMode.Force);
+			}
 		}
 	}
 

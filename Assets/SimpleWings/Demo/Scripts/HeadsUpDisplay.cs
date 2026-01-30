@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Brian Hernandez. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
@@ -15,9 +15,13 @@ public class HeadsUpDisplay : MonoBehaviour
 
 	const float kProjectionDistance = 500.0f;
 
+	private Camera mainCamera;
+
 	// Use this for initialization
 	void Start()
 	{
+		mainCamera = Camera.main;
+
 		if (plane == null)
 			Debug.LogWarning(name + ": HeadsUpDisplay has no reference plane to pull information form!");
 		if (fpm == null)
@@ -29,7 +33,7 @@ public class HeadsUpDisplay : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-		if (plane != null)
+		if (plane != null && mainCamera != null)
 		{
 			Vector3 pos = Vector3.zero;
 
@@ -37,7 +41,7 @@ public class HeadsUpDisplay : MonoBehaviour
 			{
 				// Put the cross some meters in front of the plane. This way the cross and FPM line up
 				// correctly when there is zero angle of attack.
-				pos = Camera.main.WorldToScreenPoint(plane.transform.position + (plane.transform.forward.normalized * kProjectionDistance));
+				pos = mainCamera.WorldToScreenPoint(plane.transform.position + (plane.transform.forward * kProjectionDistance));
 				//pos.z = 0.0f;
 				cross.transform.position = pos;
 			}
@@ -46,7 +50,7 @@ public class HeadsUpDisplay : MonoBehaviour
 			{
 				// Put the cross some meters in front of the plane. This way the cross and FPM line up
 				// correctly when there is zero angle of attack.
-				pos = Camera.main.WorldToScreenPoint(plane.transform.position + (plane.Rigidbody.velocity.normalized * kProjectionDistance));
+				pos = mainCamera.WorldToScreenPoint(plane.transform.position + (plane.Rigidbody.velocity.normalized * kProjectionDistance));
 				//pos.z = 0.0f;
 				fpm.transform.position = pos;
 			}

@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Brian Hernandez. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
@@ -11,11 +11,17 @@ public class GearVisuals : MonoBehaviour
 	public WheelCollider[] wheels;
 	public Transform wheelVisualizerPrefab;
 
-	private Dictionary<Transform, WheelCollider> visualToWheelMap;
+	private struct WheelData
+	{
+		public Transform visual;
+		public WheelCollider collider;
+	}
+
+	private List<WheelData> visualToWheelMap;
 
 	private void Awake()
 	{
-		visualToWheelMap = new Dictionary<Transform, WheelCollider>();
+		visualToWheelMap = new List<WheelData>();
 	}
 
 	// Use this for initialization
@@ -27,23 +33,26 @@ public class GearVisuals : MonoBehaviour
 			foreach (WheelCollider wheel in wheels)
 			{
 				Transform visual = Instantiate(wheelVisualizerPrefab, wheel.transform);
-				visualToWheelMap.Add(visual, wheel);
+				WheelData data = new WheelData { visual = visual, collider = wheel };
+				visualToWheelMap.Add(data);
 			}
 		}
 	}
 
 	private void Update()
 	{
-		if (visualToWheelMap.Count > 0)
+		int count = visualToWheelMap.Count;
+		if (count > 0)
 		{
 			Vector3 pos;
 			Quaternion rot;
 
-			foreach (var visualWheel in visualToWheelMap)
+			for (int i = 0; i < count; i++)
 			{
-				visualWheel.Value.GetWorldPose(out pos, out rot);
-				visualWheel.Key.position = pos;
-				visualWheel.Key.rotation = rot;
+				WheelData data = visualToWheelMap[i];
+				data.collider.GetWorldPose(out pos, out rot);
+				data.visual.position = pos;
+				data.visual.rotation = rot;
 			}
 		}
 	}

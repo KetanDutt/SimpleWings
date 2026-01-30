@@ -24,7 +24,7 @@ public class Engine : MonoBehaviour
 	{
 		if (rigid != null)
 		{
-			rigid.AddRelativeForce(Vector3.forward * thrust * throttle, ForceMode.Force);
+			rigid.AddForce(transform.forward * thrust * throttle, ForceMode.Force);
 		}
 	}
 

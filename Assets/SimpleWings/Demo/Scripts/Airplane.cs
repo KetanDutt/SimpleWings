@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Brian Hernandez. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
@@ -103,17 +103,11 @@ public class Airplane : MonoBehaviour
 		Vector3 localAngularVel = transform.InverseTransformDirection(Rigidbody.angularVelocity);
 
 		// Local pitch velocity (X) is positive when pitching down.
-
-		// Radius of turn = velocity / angular velocity
-		float radius = (Mathf.Approximately(localAngularVel.x, 0.0f)) ? float.MaxValue : localVelocity.z / localAngularVel.x;
-
-		// The radius of the turn will be negative when in a pitching down turn.
-
-		// Force is mass * radius * angular velocity^2
-		float verticalForce = (Mathf.Approximately(radius, 0.0f)) ? 0.0f : (localVelocity.z * localVelocity.z) / radius;
+		// Centripetal acceleration = v * omega.
+		float centripetalAccel = localVelocity.z * localAngularVel.x;
 
 		// Express in G (Always relative to Earth G)
-		float verticalG = verticalForce / -9.81f;
+		float verticalG = centripetalAccel / -9.81f;
 
 		// Add the planet's gravity in. When the up is facing directly up, then the full
 		// force of gravity will be felt in the vertical.
