@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Brian Hernandez. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
@@ -55,22 +55,26 @@ public class ControlSurface : MonoBehaviour
 		float targetAngle = targetDeflection > 0f ? targetDeflection * max : targetDeflection * min;
 
 		// How much you can deflect, depends on how much force it would take
-		if (rigid != null && wing != null && rigid.velocity.sqrMagnitude > 1f)
+		float sqrVelocity = (rigid != null) ? rigid.velocity.sqrMagnitude : 0f;
+		if (rigid != null && wing != null && sqrVelocity > 1f)
 		{
-			float torqueAtMaxDeflection = rigid.velocity.sqrMagnitude * wing.WingArea;
-			float maxAvailableDeflection = Mathf.Asin(maxTorque / torqueAtMaxDeflection) * Mathf.Rad2Deg;
+			float torqueAtMaxDeflection = sqrVelocity * wing.WingArea;
+			float asinArg = maxTorque / torqueAtMaxDeflection;
 
 			// Asin(x) where x > 1 or x < -1 is not a number.
-			if (float.IsNaN(maxAvailableDeflection) == false)
-				targetAngle *= Mathf.Clamp01(maxAvailableDeflection);
+			// If we have enough torque (asinArg >= 1), we are not limited.
+			if (asinArg < 1.0f && asinArg > -1.0f)
+			{
+				float maxAvailableDeflection = Mathf.Asin(asinArg) * Mathf.Rad2Deg;
+				targetAngle = Mathf.Clamp(targetAngle, -maxAvailableDeflection, maxAvailableDeflection);
+			}
 		}
 
 		// Move the control surface.
 		angle = Mathf.MoveTowards(angle, targetAngle, moveSpeed * Time.fixedDeltaTime);
 
-		// Hacky way to do this!
-		transform.localRotation = startLocalRotation;
-		transform.Rotate(Vector3.right, angle, Space.Self);
+		// Optimize rotation
+		transform.localRotation = startLocalRotation * Quaternion.Euler(angle, 0f, 0f);
 	}
 
 }

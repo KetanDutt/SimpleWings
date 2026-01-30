@@ -9,7 +9,7 @@ public class LookAt : MonoBehaviour
 {
 	public Transform lookAt;
 
-	private void Update()
+	private void LateUpdate()
 	{
 		if (lookAt != null)
 		{
