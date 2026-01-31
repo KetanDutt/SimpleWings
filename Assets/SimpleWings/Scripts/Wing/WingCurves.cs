@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) Brian Hernandez. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
@@ -30,13 +30,42 @@ public class WingCurves : ScriptableObject
 		new Keyframe(90f,  1f),
 		new Keyframe(180f, 0.025f));
 
+	private float[] liftCache;
+	private float[] dragCache;
+
+	private void OnEnable()
+	{
+		UpdateCaches();
+	}
+
+	private void OnValidate()
+	{
+		UpdateCaches();
+	}
+
+	private void UpdateCaches()
+	{
+		liftCache = new float[181];
+		dragCache = new float[181];
+
+		for (int i = 0; i <= 180; i++)
+		{
+			liftCache[i] = lift.Evaluate(i);
+			dragCache[i] = drag.Evaluate(i);
+		}
+	}
+
 	/// <summary>
 	/// Returns the lift coefficient at a given angle of attack.
 	/// Expected range is 0 to 180.
 	/// </summary>
 	public float GetLiftAtAOA(float aoa)
 	{
-		return lift.Evaluate(aoa);
+		if (liftCache == null) UpdateCaches();
+		int index = (int)aoa;
+		if (index >= 180) return liftCache[180];
+		if (index < 0) return liftCache[0];
+		return Mathf.Lerp(liftCache[index], liftCache[index + 1], aoa - index);
 	}
 
 	/// <summary>
@@ -45,7 +74,11 @@ public class WingCurves : ScriptableObject
 	/// </summary>
 	public float GetDragAtAOA(float aoa)
 	{
-		return drag.Evaluate(aoa);
+		if (dragCache == null) UpdateCaches();
+		int index = (int)aoa;
+		if (index >= 180) return dragCache[180];
+		if (index < 0) return dragCache[0];
+		return Mathf.Lerp(dragCache[index], dragCache[index + 1], aoa - index);
 	}
 
 	/// <summary>
@@ -54,5 +87,6 @@ public class WingCurves : ScriptableObject
 	public void SetLiftCurve(Keyframe[] newCurve)
 	{
 		lift.keys = newCurve;
+		UpdateCaches();
 	}
 }
