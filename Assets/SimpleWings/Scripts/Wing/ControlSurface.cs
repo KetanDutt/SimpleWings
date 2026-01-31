@@ -32,8 +32,6 @@ public class ControlSurface : MonoBehaviour
 	public float maxTorque = 6000f;
 
 	private Rigidbody rigid = null;
-	private Quaternion startLocalRotation = Quaternion.identity;
-
 	private float angle = 0f;
 
 	private void Awake()
@@ -41,12 +39,6 @@ public class ControlSurface : MonoBehaviour
 		// If the wing has been referenced, then control stiffening will want to be used.
 		if (wing != null)
             rigid = GetComponentInParent<Rigidbody>();
-	}
-
-	private void Start()
-	{
-		// Dirty hack so that the rotation can be reset before applying the deflection.
-		startLocalRotation = transform.localRotation;
 	}
 
 	private void FixedUpdate()
@@ -71,10 +63,11 @@ public class ControlSurface : MonoBehaviour
 		}
 
 		// Move the control surface.
+		float oldAngle = angle;
 		angle = Mathf.MoveTowards(angle, targetAngle, moveSpeed * Time.fixedDeltaTime);
 
-		// Optimize rotation
-		transform.localRotation = startLocalRotation * Quaternion.Euler(angle, 0f, 0f);
+		// Apply rotation
+		transform.Rotate(angle - oldAngle, 0f, 0f, Space.Self);
 	}
 
 }
